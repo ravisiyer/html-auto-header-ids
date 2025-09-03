@@ -29,6 +29,12 @@ This extension contributes the following settings, which you can modify in your 
 
 ---
 
+## Source Code
+
+The source code for this extension is available on GitHub: [https://github.com/ravisiyer/html-auto-header-ids](https://github.com/ravisiyer/html-auto-header-ids)
+
+---
+
 ## 0.0.1
 
 Initial release of `auto-header-ids`.
