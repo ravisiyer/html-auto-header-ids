@@ -53,12 +53,23 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  // Command 2: Mark headers with existing IDs
+  // Command 2: Mark all matching headers as no-toc with a confirmation
   let markIdsDisposable = vscode.commands.registerCommand('auto-header-ids.markExistingIds', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
     }
+    
+    const confirmation = await vscode.window.showInformationMessage(
+      'This command will add the class="no-toc" attribute to all selected headers. Do you want to proceed?',
+      { modal: true },
+      'Proceed'
+    );
+
+    if (confirmation !== 'Proceed') {
+      return;
+    }
+    
     const headersToProcess = getHeadersToProcess();
     const document = editor.document;
     const fullText = document.getText();
@@ -66,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
     const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})([^>]*)>([\\s\\S]*?)<\\/h\\1>`, 'gi');
     const matches = Array.from(fullText.matchAll(headerRegex));
     if (matches.length === 0) {
-      vscode.window.showInformationMessage('No matching headers with IDs found to mark.');
+      vscode.window.showInformationMessage('No matching headers found to mark.');
       return;
     }
 
@@ -78,7 +89,6 @@ export function activate(context: vscode.ExtensionContext) {
         const attributes = match[2];
         const headerText = match[3];
 
-        if (attributes.includes('id=')) {
           if (!attributes.includes('class=')) {
             const replacement = `<h${tagType}${attributes} class="no-toc">${headerText}</h${tagType}>`;
             const startOffset = match.index;
@@ -101,10 +111,9 @@ export function activate(context: vscode.ExtensionContext) {
             }
           }
         }
-      }
     }).then(success => {
       if (success) {
-        vscode.window.showInformationMessage('Existing IDs marked with no-toc class!');
+        vscode.window.showInformationMessage('All selected headers marked with no-toc class!');
       } else {
         vscode.window.showErrorMessage('Failed to mark headers.');
       }
