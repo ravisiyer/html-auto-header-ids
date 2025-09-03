@@ -4,7 +4,7 @@ const usedIds = new Set<string>();
 
 export function activate(context: vscode.ExtensionContext) {
 
-  // Command 1: Add IDs to headers without one
+  // Command 1: Add IDs to headers without one, skipping no-toc
   let addIdsDisposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -30,6 +30,10 @@ export function activate(context: vscode.ExtensionContext) {
             const attributes = match[2];
             const headerText = match[3];
 
+        if (attributes.includes('class="no-toc"')) {
+            continue; // Skip headers with the no-toc class
+        }
+
             if (attributes.includes('id=')) {
                 continue;
             }
@@ -54,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // Command 2: Mark all matching headers as no-toc with a confirmation
-  let markIdsDisposable = vscode.commands.registerCommand('auto-header-ids.markExistingIds', async () => {
+  let markIdsDisposable = vscode.commands.registerCommand('auto-header-ids.markSelectedHeaders', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
