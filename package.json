@@ -12,6 +12,7 @@
   ],
   "activationEvents": [
     "onCommand:auto-header-ids.addIds",
+    "onCommand:auto-header-ids.markExistingIds",
     "onCommand:auto-header-ids.createTOC"
   ],
   "main": "./out/extension.js",
@@ -20,6 +21,10 @@
       {
         "command": "auto-header-ids.addIds",
         "title": "Auto Header IDs: Add IDs to Headers"
+      },
+      {
+        "command": "auto-header-ids.markExistingIds",
+        "title": "Auto Header IDs: Mark Existing IDs as no-toc"
       },
       {
         "command": "auto-header-ids.createTOC",

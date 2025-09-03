@@ -4,28 +4,21 @@ const usedIds = new Set<string>();
 
 export function activate(context: vscode.ExtensionContext) {
 
-  let idDisposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
+  // Command 1: Add IDs to headers without one
+  let addIdsDisposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
     }
-
-    // Get the headers to process from the user's settings
     const headersToProcess = getHeadersToProcess();
-    if (headersToProcess.length === 0) {
-        vscode.window.showInformationMessage('No header tags specified in settings to process.');
-        return;
-    }
-
     const document = editor.document;
     const fullText = document.getText();
     usedIds.clear();
 
     const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})([^>]*)>([\\s\\S]*?)<\\/h\\1>`, 'gi');
     const matches = Array.from(fullText.matchAll(headerRegex));
-
     if (matches.length === 0) {
-      vscode.window.showInformationMessage('No matching header tags found.');
+      vscode.window.showInformationMessage('No matching headers found to add IDs.');
       return;
     }
 
@@ -41,9 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
                 continue;
             }
             
-            // Extract text by removing all HTML tags from the content
             const textContent = headerText.replace(/<[^>]*>/g, '').trim();
-
             const id = slugify(textContent);
             const replacement = `<h${tagType}${attributes} id="${id}">${headerText}</h${tagType}>`;
 
@@ -51,67 +42,122 @@ export function activate(context: vscode.ExtensionContext) {
             const endOffset = startOffset + fullMatch.length;
             const startPosition = document.positionAt(startOffset);
             const endPosition = document.positionAt(endOffset);
-
             editBuilder.replace(new vscode.Range(startPosition, endPosition), replacement);
         }
     }).then(success => {
         if (success) {
-            vscode.window.showInformationMessage('ID attributes added to specified headers!');
+        vscode.window.showInformationMessage('IDs added to headers without one!');
         } else {
-            vscode.window.showErrorMessage('Failed to add ID attributes.');
+        vscode.window.showErrorMessage('Failed to add IDs.');
         }
     });
   });
 
+  // Command 2: Mark headers with existing IDs
+  let markIdsDisposable = vscode.commands.registerCommand('auto-header-ids.markExistingIds', async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
+    const headersToProcess = getHeadersToProcess();
+    const document = editor.document;
+    const fullText = document.getText();
+
+    const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})([^>]*)>([\\s\\S]*?)<\\/h\\1>`, 'gi');
+    const matches = Array.from(fullText.matchAll(headerRegex));
+    if (matches.length === 0) {
+      vscode.window.showInformationMessage('No matching headers with IDs found to mark.');
+      return;
+    }
+
+    editor.edit(editBuilder => {
+      for (let i = matches.length - 1; i >= 0; i--) {
+        const match = matches[i];
+        const fullMatch = match[0];
+        const tagType = match[1];
+        const attributes = match[2];
+        const headerText = match[3];
+
+        if (attributes.includes('id=')) {
+          if (!attributes.includes('class=')) {
+            const replacement = `<h${tagType}${attributes} class="no-toc">${headerText}</h${tagType}>`;
+            const startOffset = match.index;
+            const endOffset = startOffset + fullMatch.length;
+            const startPosition = document.positionAt(startOffset);
+            const endPosition = document.positionAt(endOffset);
+            editBuilder.replace(new vscode.Range(startPosition, endPosition), replacement);
+          } else {
+            const classRegex = /class="([^"]*)"/i;
+            const classMatch = attributes.match(classRegex);
+            if (classMatch) {
+              const existingClasses = classMatch[1];
+              const updatedClasses = existingClasses.includes('no-toc') ? existingClasses : `${existingClasses} no-toc`;
+              const replacement = `<h${tagType}${attributes.replace(classRegex, `class="${updatedClasses}"`)}>${headerText}</h${tagType}>`;
+              const startOffset = match.index;
+              const endOffset = startOffset + fullMatch.length;
+              const startPosition = document.positionAt(startOffset);
+              const endPosition = document.positionAt(endOffset);
+              editBuilder.replace(new vscode.Range(startPosition, endPosition), replacement);
+            }
+          }
+        }
+      }
+    }).then(success => {
+      if (success) {
+        vscode.window.showInformationMessage('Existing IDs marked with no-toc class!');
+      } else {
+        vscode.window.showErrorMessage('Failed to mark headers.');
+      }
+    });
+  });
+
+  // Command 3: Create the TOC, skipping unwanted headers
   let tocDisposable = vscode.commands.registerCommand('auto-header-ids.createTOC', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         return;
     }
-
     const document = editor.document;
     const fullText = document.getText();
     const headersToProcess = getHeadersToProcess();
     
-    // Regex to find headers with existing IDs
-    const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})[^>]*id="([^"]*)"[^>]*>([\\s\\S]*?)<\\/h\\1>`, 'gi');
+    const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})([^>]*)id="([^"]*)"([^>]*)>([\\s\\S]*?)<\\/h\\1>`, 'gi');
     const matches = Array.from(fullText.matchAll(headerRegex));
-
     if (matches.length === 0) {
         vscode.window.showInformationMessage('No header tags with IDs found to create a Table of Contents.');
         return;
     }
 
-    const tocLines: string[] = ['<ul>'];
+    const tocLines: string[] = [];
     let lastLevel = 0;
     
-    // Indentation for list items
-    const indentation = '  ';
-
     for (const match of matches) {
+      const attributes = match[2] + match[4];
+      if (attributes.includes('class="no-toc"')) {
+        continue;
+      }
         const tagType = match[1];
-        const id = match[2];
-        const headerText = match[3].replace(/<[^>]*>/g, '').trim();
+      const id = match[3];
+      const headerText = match[5].replace(/<[^>]*>/g, '').trim();
         const currentLevel = parseInt(tagType);
         
-        // Adjust list nesting
-        if (currentLevel > lastLevel) {
-            for (let i = 0; i < currentLevel - lastLevel; i++) {
-                tocLines.push(indentation.repeat(currentLevel - 1) + '<ul>');
-            }
-        } else if (currentLevel < lastLevel) {
-            for (let i = 0; i < lastLevel - currentLevel; i++) {
-                tocLines.push(indentation.repeat(currentLevel - 1) + '</ul>');
-            }
+      while (currentLevel < lastLevel) {
+        tocLines.push('  '.repeat(lastLevel) + '</ul>');
+        lastLevel--;
+      }
+
+      while (currentLevel > lastLevel) {
+        tocLines.push('  '.repeat(lastLevel) + '<ul>');
+        lastLevel++;
         }
         
-        tocLines.push(indentation.repeat(currentLevel) + `<li><a href="#${id}">${headerText}</a></li>`);
+      tocLines.push('  '.repeat(currentLevel) + `<li><a href="#${id}">${headerText}</a></li>`);
         lastLevel = currentLevel;
     }
 
-    // Close any open lists
-    for (let i = 0; i < lastLevel; i++) {
-      tocLines.push(indentation.repeat(i) + '</ul>');
+    while (lastLevel > 0) {
+      tocLines.push('  '.repeat(lastLevel) + '</ul>');
+      lastLevel--;
     }
 
     const tocContent = tocLines.join('\n');
@@ -128,28 +174,25 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  context.subscriptions.push(idDisposable, tocDisposable);
+  context.subscriptions.push(addIdsDisposable, markIdsDisposable, tocDisposable);
 }
 
 function getHeadersToProcess(): string[] {
     const config = vscode.workspace.getConfiguration('auto-header-ids');
     const headers = config.get<string[]>('headersToProcess');
-    // Ensure the returned value is an array of strings, or an empty array if undefined.
     return Array.isArray(headers) ? headers.filter(h => typeof h === 'string' && h.match(/^[1-6]$/)) : ['1', '2'];
 }
 
 function slugify(text: string): string {
   const MAX_LENGTH = 15;
-  // Decode HTML entities to standard characters before slugifying.
   let decodedText = text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
-  
   let slug = decodedText.toString().toLowerCase()
     .trim()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/[^\w-]+/g, '') // Remove all non-word characters except hyphens
-    .replace(/--+/g, '-') // Replace multiple hyphens with a single one
-    .replace(/^-+/, '') // Remove leading hyphens
-    .replace(/-+$/, ''); // Remove trailing hyphens
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 
   if (slug.length > MAX_LENGTH) {
     slug = slug.substring(0, MAX_LENGTH);
