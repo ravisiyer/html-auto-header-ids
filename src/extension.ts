@@ -5,7 +5,7 @@ const usedIds = new Set<string>();
 export function activate(context: vscode.ExtensionContext) {
 
   // Command 1: Add IDs to headers without one, skipping no-toc
-  let addIdsDisposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
+  let addIdsDisposable = vscode.commands.registerCommand('auto-header-ids-toc.addIds', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
@@ -58,14 +58,14 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // Command 2: Mark all matching headers as no-toc with a confirmation
-  let markIdsDisposable = vscode.commands.registerCommand('auto-header-ids.markSelectedHeaders', async () => {
+  let markHeadersDisposable = vscode.commands.registerCommand('auto-header-ids-toc.markHeadersAsNoTOC', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
     }
     
     const confirmation = await vscode.window.showInformationMessage(
-      'This command will add the class="no-toc" attribute to all selected headers. Do you want to proceed?',
+      'This command will add the class="no-toc" attribute to all configured headers. Do you want to proceed?',
       { modal: true },
       'Proceed'
     );
@@ -117,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }).then(success => {
       if (success) {
-        vscode.window.showInformationMessage('All selected headers marked with no-toc class!');
+        vscode.window.showInformationMessage('All configured headers marked with no-toc class!');
       } else {
         vscode.window.showErrorMessage('Failed to mark headers.');
       }
@@ -125,7 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // Command 3: Create the TOC, skipping unwanted headers
-  let tocDisposable = vscode.commands.registerCommand('auto-header-ids.createTOC', async () => {
+  let tocDisposable = vscode.commands.registerCommand('auto-header-ids-toc.createTOC', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         return;
@@ -173,7 +173,8 @@ export function activate(context: vscode.ExtensionContext) {
       lastLevel--;
     }
 
-    const tocContent = tocLines.join('\n');
+    // Add a header for the TOC and a terminating newline
+    const tocContent = `<h2>Contents</h2>\n` + tocLines.join('\n') + `\n`;
 
     editor.edit(editBuilder => {
         const currentPosition = editor.selection.active;
@@ -187,11 +188,11 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  context.subscriptions.push(addIdsDisposable, markIdsDisposable, tocDisposable);
+  context.subscriptions.push(addIdsDisposable, markHeadersDisposable, tocDisposable);
 }
 
 function getHeadersToProcess(): string[] {
-    const config = vscode.workspace.getConfiguration('auto-header-ids');
+    const config = vscode.workspace.getConfiguration('auto-header-ids-toc');
     const headers = config.get<string[]>('headersToProcess');
     return Array.isArray(headers) ? headers.filter(h => typeof h === 'string' && h.match(/^[1-6]$/)) : ['1', '2'];
 }

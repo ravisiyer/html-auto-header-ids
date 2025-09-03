@@ -1,8 +1,8 @@
 {
-  "name": "auto-header-ids",
-  "displayName": "Auto Header IDs",
+  "name": "auto-header-ids-toc",
+  "displayName": "Auto Header IDs and TOC",
   "publisher": "Ravi S. Iyer",
-  "description": "Adds ID attribute to HTML Header elements",
+  "description": "Adds ID attribute to HTML Header elements (h1, h2, etc.) and generates a Table of Contents (TOC) for easy navigation.",
   "version": "0.0.2",
   "engines": {
     "vscode": "^1.103.0"
@@ -11,30 +11,30 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:auto-header-ids.addIds",
-    "onCommand:auto-header-ids.markSelectedHeaders",
-    "onCommand:auto-header-ids.createTOC"
+    "onCommand:auto-header-ids-toc.addIds",
+    "onCommand:auto-header-ids-toc.markHeadersAsNoTOC",
+    "onCommand:auto-header-ids-toc.createTOC"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "auto-header-ids.addIds",
-        "title": "Auto Header IDs: Add IDs to Headers"
+        "command": "auto-header-ids-toc.addIds",
+        "title": "Auto Header IDs and TOC: Add IDs to Headers"
       },
       {
-        "command": "auto-header-ids.markSelectedHeaders",
-        "title": "Auto Header IDs: Mark Selected Headers as no-toc"
+        "command": "auto-header-ids-toc.markHeadersAsNoTOC",
+        "title": "Auto Header IDs and TOC: Mark Configured Headers as no-toc"
       },
       {
-        "command": "auto-header-ids.createTOC",
-        "title": "Auto Header IDs: Create Table of Contents"
+        "command": "auto-header-ids-toc.createTOC",
+        "title": "Auto Header IDs and TOC: Create Table of Contents"
       }
     ],
     "configuration": {
-      "title": "Auto Header IDs Configuration",
+      "title": "Auto Header IDs and TOC Configuration",
       "properties": {
-        "auto-header-ids.headersToProcess": {
+        "auto-header-ids-toc.headersToProcess": {
           "type": "array",
           "default": [
             "1",
