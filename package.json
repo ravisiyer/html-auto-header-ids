@@ -46,6 +46,10 @@
       }
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ravisiyer/html-auto-header-ids"
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
