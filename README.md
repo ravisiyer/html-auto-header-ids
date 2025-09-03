@@ -12,6 +12,17 @@ To run the command, open the **Command Palette** (`F1` or `Ctrl+Shift+P`) and ty
 
 ---
 
+## Installation
+
+This extension is not yet available on the Visual Studio Code Marketplace. To install it, you must use the `.vsix` file from the [releases page](https://github.com/ravisiyer/html-auto-header-ids/releases).
+
+1.  Download the latest `auto-header-ids-*.vsix` file from the releases.
+2.  In VS Code, open the **Extensions** view (`Ctrl+Shift+X`).
+3.  Click the three dots `...` in the top right corner.
+4.  Select **"Install from VSIX..."** and choose the downloaded file.
+
+---
+
 ## Extension Settings
 
 This extension contributes the following settings, which you can modify in your VS Code `settings.json` file:
