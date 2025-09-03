@@ -1,6 +1,7 @@
 {
   "name": "auto-header-ids",
   "displayName": "Auto Header IDs",
+  "publisher": "Ravi S. Iyer",
   "description": "Adds ID attribute to HTML Header elements",
   "version": "0.0.1",
   "engines": {
@@ -9,7 +10,7 @@
   "categories": [
     "Other"
   ],
- "activationEvents": [
+  "activationEvents": [
     "onCommand:auto-header-ids.addIds"
   ],
   "main": "./out/extension.js",
@@ -21,18 +22,28 @@
       }
     ],
     "configuration": {
-        "title": "Auto Header IDs Configuration",
-        "properties": {
-            "auto-header-ids.headersToProcess": {
-                "type": "array",
-                "default": ["1", "2"],
-                "items": {
-                    "type": "string",
-                    "enum": ["1", "2", "3", "4", "5", "6"]
-                },
-                "description": "Specify which header elements (e.g., h1, h2) should have IDs added. Enter the numbers as strings in an array."
-            }
+      "title": "Auto Header IDs Configuration",
+      "properties": {
+        "auto-header-ids.headersToProcess": {
+          "type": "array",
+          "default": [
+            "1",
+            "2"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6"
+            ]
+          },
+          "description": "Specify which header elements (e.g., h1, h2) should have IDs added. Enter the numbers as strings in an array."
         }
+      }
     }
   },
   "scripts": {
