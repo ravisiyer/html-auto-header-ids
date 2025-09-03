@@ -4,7 +4,7 @@ const usedIds = new Set<string>();
 
 export function activate(context: vscode.ExtensionContext) {
 
-  let disposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
+  let idDisposable = vscode.commands.registerCommand('auto-header-ids.addIds', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
@@ -63,7 +63,72 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  context.subscriptions.push(disposable);
+  let tocDisposable = vscode.commands.registerCommand('auto-header-ids.createTOC', async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+
+    const document = editor.document;
+    const fullText = document.getText();
+    const headersToProcess = getHeadersToProcess();
+    
+    // Regex to find headers with existing IDs
+    const headerRegex = new RegExp(`<h(${headersToProcess.join('|')})[^>]*id="([^"]*)"[^>]*>([\\s\\S]*?)<\\/h\\1>`, 'gi');
+    const matches = Array.from(fullText.matchAll(headerRegex));
+
+    if (matches.length === 0) {
+        vscode.window.showInformationMessage('No header tags with IDs found to create a Table of Contents.');
+        return;
+    }
+
+    const tocLines: string[] = ['<ul>'];
+    let lastLevel = 0;
+    
+    // Indentation for list items
+    const indentation = '  ';
+
+    for (const match of matches) {
+        const tagType = match[1];
+        const id = match[2];
+        const headerText = match[3].replace(/<[^>]*>/g, '').trim();
+        const currentLevel = parseInt(tagType);
+        
+        // Adjust list nesting
+        if (currentLevel > lastLevel) {
+            for (let i = 0; i < currentLevel - lastLevel; i++) {
+                tocLines.push(indentation.repeat(currentLevel - 1) + '<ul>');
+            }
+        } else if (currentLevel < lastLevel) {
+            for (let i = 0; i < lastLevel - currentLevel; i++) {
+                tocLines.push(indentation.repeat(currentLevel - 1) + '</ul>');
+            }
+        }
+        
+        tocLines.push(indentation.repeat(currentLevel) + `<li><a href="#${id}">${headerText}</a></li>`);
+        lastLevel = currentLevel;
+    }
+
+    // Close any open lists
+    for (let i = 0; i < lastLevel; i++) {
+      tocLines.push(indentation.repeat(i) + '</ul>');
+    }
+
+    const tocContent = tocLines.join('\n');
+
+    editor.edit(editBuilder => {
+        const currentPosition = editor.selection.active;
+        editBuilder.insert(currentPosition, tocContent);
+    }).then(success => {
+        if (success) {
+            vscode.window.showInformationMessage('Table of Contents created successfully!');
+        } else {
+            vscode.window.showErrorMessage('Failed to create Table of Contents.');
+        }
+    });
+  });
+
+  context.subscriptions.push(idDisposable, tocDisposable);
 }
 
 function getHeadersToProcess(): string[] {

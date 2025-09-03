@@ -3,3 +3,6 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+gem.json
+gem.ts
+gem-sugg/gem.ts.txt

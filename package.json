@@ -3,7 +3,7 @@
   "displayName": "Auto Header IDs",
   "publisher": "Ravi S. Iyer",
   "description": "Adds ID attribute to HTML Header elements",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -11,7 +11,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:auto-header-ids.addIds"
+    "onCommand:auto-header-ids.addIds",
+    "onCommand:auto-header-ids.createTOC"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -19,6 +20,10 @@
       {
         "command": "auto-header-ids.addIds",
         "title": "Auto Header IDs: Add IDs to Headers"
+      },
+      {
+        "command": "auto-header-ids.createTOC",
+        "title": "Auto Header IDs: Create Table of Contents"
       }
     ],
     "configuration": {
