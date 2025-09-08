@@ -1,6 +1,8 @@
-# `auto-header-ids-toc` README
+# `Auto Header IDs and TOC`
 
-This `auto-header-ids-toc` VSCode extension with display name of `Auto Header IDs and TOC` automatically adds an `id` attribute to HTML header elements in the current document and can also generate a Table of Contents (TOC). The older name of the extension was `auto-header-ids` with display name of `Auto Header IDs`.
+This `auto-header-ids-toc` VSCode extension with display name of `Auto Header IDs and TOC` automatically adds an `id` attribute to HTML header elements in the current document and can also generate a Table of Contents (TOC). 
+
+This feature can be used to auto generate Table of Contents with internal links to h1 (Major Heading) and h2 (Heading) section headers in Blogger blog posts (involves editing post HTML in VSCode). For instructions on how to do that, please see [my blog post](https://raviswdev.blogspot.com/2025/09/vscode-extension-to-auto-add-id.html).
 
 ## Features
 
@@ -51,6 +53,11 @@ This extension contributes the following setting, which you can modify in your V
 The source code for this extension is available on GitHub: [https://github.com/ravisiyer/html-auto-header-ids](https://github.com/ravisiyer/html-auto-header-ids)
 
 ---
+
+## 0.0.3
+
+- Created blog post on how to use the extension to auto generate Table of Contents in Blogger posts.
+- Updated README with link to blog post.
 
 ## 0.0.2
 

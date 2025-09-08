@@ -2,8 +2,8 @@
   "name": "auto-header-ids-toc",
   "displayName": "Auto Header IDs and TOC",
   "publisher": "Ravi S. Iyer",
-  "description": "Adds ID attribute to HTML Header elements (h1, h2, etc.) and generates a Table of Contents (TOC) for easy navigation.",
-  "version": "0.0.2",
+  "description": "HTML Table of Contents (TOC) generator; Blogger post TOC generator",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.103.0"
   },
