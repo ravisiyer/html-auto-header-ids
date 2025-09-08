@@ -69,7 +69,11 @@ The source code for this extension is available on GitHub: [https://github.com/r
 
 Initial release of `auto-header-ids`.
 
-Author: This extension was developed by Ravi S. Iyer with assistance from Gemini.
+---
+
+## Author
+
+This extension was developed by Ravi S. Iyer with assistance from Gemini.
 
 ---
 
